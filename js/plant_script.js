@@ -115,7 +115,7 @@ function preloadModels() {
 
   // — Bloom model (external)
   loader.load(
-    'https://drive.google.com/uc?export=download&id=YOUR_BLOOM_FILE_ID',
+    'https://drive.google.com/file/d/1HaBEQflGHUE0geqToDGqHN4eSXCM4vZE/view?usp=drive_link',
     gltf => {
       bloomModel = gltf.scene;
       bloomModel.position.set(0, -3.8, 0);
