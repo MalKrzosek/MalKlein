@@ -1,5 +1,3 @@
-// plant_script.js
-
 let scene, camera, renderer, controls, mixer;
 let growModel, bloomModel;
 let growActions = {}, bloomActions = {};
@@ -10,6 +8,10 @@ window.addEventListener("DOMContentLoaded", () => {
   init();
   animate();
   setupWireframeToggle();
+
+  // Attach functions so they work with inline onclick
+  window.playGrow = playGrow;
+  window.playBloom = playBloom;
 });
 
 function setupWireframeToggle() {
@@ -108,9 +110,9 @@ function preloadModels() {
     err => console.error('Error loading grow model:', err)
   );
 
-  // Bloom model (external)
+  // Bloom model (Google Drive)
   loader.load(
-    'https://drive.google.com/file/d/1HaBEQflGHUE0geqToDGqHN4eSXCM4vZE/view?usp=drive_link',
+    'https://drive.google.com/uc?export=download&id=1HaBEQflGHUE0geqToDGqHN4eSXCM4vZE',
     gltf => {
       bloomModel = gltf.scene;
       bloomModel.position.set(0, -3.8, 0);
