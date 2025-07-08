@@ -4,18 +4,12 @@ let scene, camera, renderer, controls, mixer;
 let growModel, bloomModel;
 let growActions = {}, bloomActions = {};
 let bloomMixer;
-let isWireframe = false;  // shared flag
+let isWireframe = false;
 
 window.addEventListener("DOMContentLoaded", () => {
   init();
   animate();
   setupWireframeToggle();
-
-  // wire up Grow/Bloom buttons
-  const growBtn = document.getElementById("growButton");
-  const bloomBtn = document.getElementById("bloomButton");
-  if (growBtn)  growBtn.addEventListener("click", playGrow);
-  if (bloomBtn) bloomBtn.addEventListener("click", playBloom);
 });
 
 function setupWireframeToggle() {
@@ -45,7 +39,7 @@ function init() {
   scene = new THREE.Scene();
   scene.background = new THREE.TextureLoader().load('./assets/images/flowerbackground.jpg');
 
-  camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 100);
+  camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 100);
   camera.position.set(0, -1, 8);
   camera.lookAt(0, -0.4, 0);
 
@@ -59,10 +53,10 @@ function init() {
   renderer.toneMappingExposure = 1.6;
 
   scene.add(new THREE.HemisphereLight(0xffffff, 0xffffff, 1.5));
-  const dir = new THREE.DirectionalLight(0xffffff, 8);
-  dir.position.set(5,10,5);
-  dir.castShadow = true;
-  scene.add(dir);
+  const dirLight = new THREE.DirectionalLight(0xffffff, 8);
+  dirLight.position.set(5, 10, 5);
+  dirLight.castShadow = true;
+  scene.add(dirLight);
   scene.add(new THREE.AmbientLight(0xffffff, 1.5));
 
   controls = new THREE.OrbitControls(camera, renderer.domElement);
@@ -75,22 +69,23 @@ function init() {
 
 function onWindowResize() {
   const canvas = document.getElementById('plantCanvas');
-  const w = canvas.clientWidth, h = canvas.clientHeight;
-  camera.aspect = w/h;
+  const width = canvas.clientWidth;
+  const height = canvas.clientHeight;
+  camera.aspect = width / height;
   camera.updateProjectionMatrix();
-  renderer.setSize(w, h, false);
+  renderer.setSize(width, height, false);
 }
 
 function preloadModels() {
   const loader = new THREE.GLTFLoader();
 
-  // — Grow model (local)
+  // Grow model (local)
   loader.load(
     './assets/models/grow_plant.glb',
     gltf => {
       growModel = gltf.scene;
       growModel.position.set(0, -3.8, 0);
-      growModel.scale.set(1.3,1.3,1.3);
+      growModel.scale.set(1.3, 1.3, 1.3);
       growModel.visible = true;
       growModel.traverse(child => {
         if (child.isMesh) {
@@ -103,23 +98,23 @@ function preloadModels() {
       scene.add(growModel);
       mixer = new THREE.AnimationMixer(growModel);
       gltf.animations.forEach(clip => {
-        let action = mixer.clipAction(clip);
+        const action = mixer.clipAction(clip);
         action.setLoop(THREE.LoopOnce);
         action.clampWhenFinished = true;
         growActions[clip.name] = clip;
       });
     },
-    xhr => console.log(`Grow model: ${(xhr.loaded/xhr.total*100).toFixed(1)}% loaded`),
+    xhr => console.log(`Grow model: ${(xhr.loaded / xhr.total * 100).toFixed(1)}% loaded`),
     err => console.error('Error loading grow model:', err)
   );
 
-  // — Bloom model (external)
+  // Bloom model (external)
   loader.load(
     'https://drive.google.com/file/d/1HaBEQflGHUE0geqToDGqHN4eSXCM4vZE/view?usp=drive_link',
     gltf => {
       bloomModel = gltf.scene;
       bloomModel.position.set(0, -3.8, 0);
-      bloomModel.scale.set(1.3,1.3,1.3);
+      bloomModel.scale.set(1.3, 1.3, 1.3);
       bloomModel.visible = false;
       bloomModel.traverse(child => {
         if (child.isMesh) {
@@ -133,13 +128,13 @@ function preloadModels() {
       bloomMixer = new THREE.AnimationMixer(bloomModel);
       bloomActions = {};
       gltf.animations.forEach(clip => {
-        let action = bloomMixer.clipAction(clip);
+        const action = bloomMixer.clipAction(clip);
         action.setLoop(THREE.LoopOnce);
         action.clampWhenFinished = true;
         bloomActions[clip.name] = action;
       });
     },
-    xhr => console.log(`Bloom model: ${(xhr.loaded/xhr.total*100).toFixed(1)}% loaded`),
+    xhr => console.log(`Bloom model: ${(xhr.loaded / xhr.total * 100).toFixed(1)}% loaded`),
     err => console.error('Error loading bloom model:', err)
   );
 }
@@ -150,12 +145,12 @@ function playGrow() {
   if (bloomModel) bloomModel.visible = false;
   mixer = new THREE.AnimationMixer(growModel);
   Object.values(growActions).forEach(clip => {
-    let action = mixer.clipAction(clip);
+    const action = mixer.clipAction(clip);
     action.reset().setLoop(THREE.LoopOnce).clampWhenFinished = true;
     action.play();
   });
-  const s = document.getElementById('growSound');
-  if (s) { s.currentTime = 0; s.play(); }
+  const sound = document.getElementById('growSound');
+  if (sound) { sound.currentTime = 0; sound.play(); }
 }
 
 function playBloom() {
@@ -163,11 +158,9 @@ function playBloom() {
   bloomModel.visible = true;
   if (growModel) growModel.visible = false;
   mixer = bloomMixer;
-  Object.values(bloomActions).forEach(action => {
-    action.reset().play();
-  });
-  const s = document.getElementById('bloomSound');
-  if (s) { s.currentTime = 0; s.play(); }
+  Object.values(bloomActions).forEach(action => action.reset().play());
+  const sound = document.getElementById('bloomSound');
+  if (sound) { sound.currentTime = 0; sound.play(); }
 }
 
 function animate() {
