@@ -116,35 +116,44 @@ function preloadModels() {
     });
   });
 
+    xhr => console.log(`${(xhr.loaded/xhr.total*100).toFixed(1)}% loaded grow`),
+    err => console.error('Error loading grow model:', err)
+  );
 
-  loader.load('./assets/models/bloom_plant.glb', function (gltf) {
-    bloomModel = gltf.scene;
-    bloomModel.position.set(0, -3.8, 0);
-    bloomModel.scale.set(1.3, 1.3, 1.3);
-    bloomModel.visible = false;
-   
-   
-    bloomModel.traverse((child) => {
-      if (child.isMesh) {
-        child.material.metalness = 0.4;
-        child.material.roughness = 0;
-        child.material.envMapIntensity = 1.7;
-        child.material.needsUpdate = true;
-      }
-    });
-   
-   
-    scene.add(bloomModel);
 
-    bloomMixer = new THREE.AnimationMixer(bloomModel);
-    bloomActions = {};
-    gltf.animations.forEach((clip) => {
-      const action = bloomMixer.clipAction(clip);
-      action.setLoop(THREE.LoopOnce);
-      action.clampWhenFinished = true;
-      bloomActions[clip.name] = action;
-    });
-  });
+
+   // ——— Bloom model (external) ———
+  loader.load(
+    'https://drive.google.com/uc?export=download&id=YOUR_BLOOM_FILE_ID', // replace with your Drive ID
+    function (gltf) {
+      bloomModel = gltf.scene;
+      bloomModel.position.set(0, -3.8, 0);
+      bloomModel.scale.set(1.3, 1.3, 1.3);
+      bloomModel.visible = false;
+
+      bloomModel.traverse((child) => {
+        if (child.isMesh) {
+          child.material.metalness = 0.4;
+          child.material.roughness = 0;
+          child.material.envMapIntensity = 1.7;
+          child.material.needsUpdate = true;
+        }
+      });
+
+      scene.add(bloomModel);
+
+      bloomMixer = new THREE.AnimationMixer(bloomModel);
+      bloomActions = {};
+      gltf.animations.forEach((clip) => {
+        const action = bloomMixer.clipAction(clip);
+        action.setLoop(THREE.LoopOnce);
+        action.clampWhenFinished = true;
+        bloomActions[clip.name] = action;
+      });
+    },
+    xhr => console.log(`${(xhr.loaded/xhr.total*100).toFixed(1)}% loaded bloom`),
+    err => console.error('Error loading bloom model:', err)
+  );
 }
 
 function playGrow() {
